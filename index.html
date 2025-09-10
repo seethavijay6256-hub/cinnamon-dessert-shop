@@ -55,6 +55,7 @@
           { name: "Strawberry", desc: "Strawberry with white chocolate:", price: 700, img: "https://images.unsplash.com/photo-1541976076758-347942db1974?q=80&w=800&auto=format&fit=crop" },
           { name: "Blueberry", desc: "Blueberry with white chocolate:", price: 700, img: "https://images.unsplash.com/photo-1604908554007-092f405cc3d1?q=80&w=800&auto=format&fit=crop" },
           { name: "Mixed berries", desc: "Mixed berries white chocolate:", price: 700, img: "https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=800&auto=format&fit=crop" },
+          { name: "Oreo", desc: "Oreo with dark chocolate:", price: 800, img: "https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=800&auto=format&fit=crop" },
         ],
       },
       {
@@ -71,8 +72,9 @@
       {
         category: "Tea Cakes",
         items: [
-          { name: "Carrot cake", desc: "Soft, cinnamon sugar.", price: 299, img: "https://images.unsplash.com/photo-1542574271-7f3b92e6c821?q=80&w=800&auto=format&fit=crop" },
-          { name: "Choco-Chip + Cinnamon (8)", desc: "Crispy edges, gooey middle.", price: 329, img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop" },
+          { name: "Carrot cake", desc: "Carrot", price: 550, img: "https://images.unsplash.com/photo-1542574271-7f3b92e6c821?q=80&w=800&auto=format&fit=crop" },
+          { name: "Banana Walnut cake", desc: "Banana Walnut", price: 600, img: "https://images.unsplash.com/photo-1542574271-7f3b92e6c821?q=80&w=800&auto=format&fit=crop" },
+          { name: "Choco-Chip cake", desc: "Choco-chip", price: 500, img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop" },
         ],
       },
     ];
@@ -195,7 +197,7 @@
           <section className="max-w-6xl mx-auto px-4 py-8">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-2xl md:text-3xl font-bold">Our Menu</h2>
-              <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search cinnamon rolls, cakes, cookies…" className="w-full md:w-80 rounded-xl border border-stone-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+              <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search Blondies, Brownies & Tea cakes…" className="w-full md:w-80 rounded-xl border border-stone-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" />
             </div>
 
             {/* Menu grid */}
@@ -290,7 +292,7 @@
           <section className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center">
             <div className="order-2 md:order-1">
               <h2 className="text-2xl md:text-3xl font-bold">About the Bakery</h2>
-              <p className="mt-4 text-stone-700">Welcome! I'm a Chennai-based home baker specializing in cinnamon-forward desserts. Every batch is handcrafted in a hygienic home kitchen with quality ingredients — no shortcuts. Pre-orders ensure freshness and reduce food waste.</p>
+              <p className="mt-4 text-stone-700">Welcome! I'm a Chennai-based home baker specializing in desserts (blondies, brownies & tea cakes). Every batch is handcrafted in a hygienic home kitchen with quality ingredients — no shortcuts. Pre-orders ensure freshness and reduce food waste.</p>
               <ul className="mt-4 space-y-2 text-stone-700 list-disc pl-5">
                 <li>Egg-free & low-sugar options available on request</li>
                 <li>Gift packaging & party trays available</li>
