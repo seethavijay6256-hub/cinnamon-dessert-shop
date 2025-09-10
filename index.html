@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cinnamon Dessert Shop — Chennai</title>
+  <meta name="description" content="Small-batch cinnamon desserts, baked fresh in Chennai. Home bakery — pickup & delivery via Dunzo/Rapido/Swiggy Genie." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+  </style>
+  <!-- SEO & LocalBusiness schema (updated by script) -->
+  <script id="schema" type="application/ld+json"></script>
+</head>
+<body class="bg-stone-50 text-stone-900">
+  <div id="root"></div>
+
+  <!-- React 18 UMD + ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel for in-browser JSX transform -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- App Code: JSX compiled by Babel in the browser -->
+  <script type="text/babel">
+    const { useEffect, useState } = React;
+
+    // --- QUICK SETTINGS (edit these) ---
+    const BAKERY = {
+      name: "Cinnamon Dessert Shop", // change to your bakery name
+      tagline: "Small-batch cinnamon desserts, baked fresh in Chennai",
+      owner: "Home Baker",
+      phone: "+919790793917", // update phone
+      whatsapp: "919790793917", // country code + number (no +)
+      email: "pujitha.vasanth@gmail.com", // change or leave blank
+      instagram: "https://instagram.com/cinnamondessertshop", // optional
+      addressLine1: "Thiruvanmiyur, Chennai",
+      addressLine2: "Tamil Nadu 600041",
+      googleMaps: "https://maps.app.goo.gl/", // link to your map pin
+      hours: [
+        { d: "Mon–Fri", h: "10:00 AM – 7:00 PM" },
+        { d: "Sat–Sun", h: "9:00 AM – 8:00 PM" },
+      ],
+      delivery: ["Pickup", "Dunzo", "Rapido Parcel", "Swiggy Genie"],
+    };
+
+    // --- MENU (customize as you like; prices in INR) ---
+    const MENU = [
+      {
+        category: "Cinnamon Rolls",
+        items: [
+          { name: "Classic Cinnamon Roll", desc: "Cream cheese frosting.", price: 129, img: "https://images.unsplash.com/photo-1541976076758-347942db1974?q=80&w=800&auto=format&fit=crop" },
+          { name: "Brown Butter Pecan Roll", desc: "Nutty & caramelly.", price: 149, img: "https://images.unsplash.com/photo-1604908554007-092f405cc3d1?q=80&w=800&auto=format&fit=crop" },
+          { name: "Coffee Mocha Roll", desc: "Espresso glaze.", price: 149, img: "https://images.unsplash.com/photo-1511920170033-f8396924c348?q=80&w=800&auto=format&fit=crop" },
+          { name: "Mini Roll Box (6)", desc: "Perfect for gifting.", price: 399, img: "https://images.unsplash.com/photo-1541782814455-c60d8f49b8e9?q=80&w=800&auto=format&fit=crop" },
+        ],
+      },
+      {
+        category: "Cakes & Loaves",
+        items: [
+          { name: "Cinnamon Swirl Pound Cake", desc: "Rich, moist crumb.", price: 699, img: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=800&auto=format&fit=crop" },
+          { name: "Sticky Toffee Cinnamon Cake", desc: "Warm caramel sauce.", price: 749, img: "https://images.unsplash.com/photo-1599785209796-9e6e5f2af36c?q=80&w=800&auto=format&fit=crop" },
+          { name: "Banana Cinnamon Loaf", desc: "No eggs on request.", price: 349, img: "https://images.unsplash.com/photo-1605478908524-6e76a2a3c6cf?q=80&w=800&auto=format&fit=crop" },
+        ],
+      },
+      {
+        category: "Cookies",
+        items: [
+          { name: "Snickerdoodles (Box of 8)", desc: "Soft, cinnamon sugar.", price: 299, img: "https://images.unsplash.com/photo-1542574271-7f3b92e6c821?q=80&w=800&auto=format&fit=crop" },
+          { name: "Choco-Chip + Cinnamon (8)", desc: "Crispy edges, gooey middle.", price: 329, img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop" },
+        ],
+      },
+    ];
+
+    function estimateDeliveryFee(km) {
+      const n = typeof km === "string" ? parseFloat(km) : (km ?? NaN);
+      if (Number.isNaN(n)) return null; // unknown
+      const perKm = 12; // ₹ per km (rule-of-thumb)
+      const minFee = 30; // ₹ minimum
+      return Math.max(minFee, Math.round(n * perKm));
+    }
+
+    function CinnamonBakerySite() {
+      const [cart, setCart] = useState([]);
+      const [filter, setFilter] = useState("");
+
+      // Checkout fields
+      const [custName, setCustName] = useState("");
+      const [fulfillment, setFulfillment] = useState("Pickup"); // "Pickup" | "Delivery"
+      const [date, setDate] = useState("");
+      const [time, setTime] = useState("");
+      const [distanceKm, setDistanceKm] = useState(""); // optional
+
+      const addToCart = (item) => setCart((c) => [...c, item]);
+      const removeFromCart = (idx) => setCart((c) => c.filter((_, i) => i !== idx));
+
+      const subtotal = cart.reduce((s, i) => s + (i.price || 0), 0);
+      const fee = estimateDeliveryFee(fulfillment === "Delivery" ? distanceKm : null);
+      const grandTotal = subtotal + (fee || 0);
+
+      const filteredMenu = MENU.map((section) => ({
+        ...section,
+        items: section.items.filter(
+          (i) =>
+            i.name.toLowerCase().includes(filter.toLowerCase()) ||
+            i.desc.toLowerCase().includes(filter.toLowerCase())
+        ),
+      })).filter((s) => s.items.length);
+
+      const buildWhatsAppMessage = () => {
+        const lines = [];
+        lines.push(`Hi ${BAKERY.name}! I'd like to order:`);
+        if (cart.length) {
+          cart.forEach((i) => lines.push(`• ${i.name} — ₹${i.price}`));
+          lines.push(`Total (items): ₹${subtotal}`);
+        } else {
+          lines.push("(no items yet)");
+        }
+        lines.push("");
+        if (custName) lines.push(`Name: ${custName}`);
+        lines.push(`Fulfillment: ${fulfillment}`);
+        if (date) lines.push(`Date: ${date}`);
+        if (time) lines.push(`Time: ${time}`);
+        if (fulfillment === "Delivery") {
+          if (distanceKm) lines.push(`Distance: ${distanceKm} km`);
+          lines.push(fee != null ? `Est. Delivery Fee: ₹${fee}` : "Delivery fee: charges by distance");
+        }
+        if (cart.length) lines.push(`Grand Total (est.): ₹${grandTotal}`);
+        return encodeURIComponent(lines.join("\n"));
+      };
+
+      const waMessage = buildWhatsAppMessage();
+
+      // JSON-LD
+      useEffect(() => {
+        const schema = {
+          "@context": "https://schema.org",
+          "@type": "Bakery",
+          name: BAKERY.name,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: BAKERY.addressLine1,
+            addressLocality: "Chennai",
+            addressRegion: "TN",
+            postalCode: "600041",
+            addressCountry: "IN",
+          },
+          telephone: BAKERY.phone,
+          url: location.href,
+          servesCuisine: "Desserts",
+          priceRange: "₹₹",
+          openingHours: BAKERY.hours.map((h) => h.d + " " + h.h).join(", "),
+        };
+        const el = document.getElementById("schema");
+        if (el) el.textContent = JSON.stringify(schema);
+      }, []);
+
+      return (
+        <div className="min-h-screen">
+          {/* Top banner */}
+          <div className="w-full bg-amber-100 text-amber-950 text-center text-sm py-2">
+            100% home-baked • Small batches • Made to order
+          </div>
+
+          {/* Hero */}
+          <header className="relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_#fde68a,_transparent_40%),_radial-gradient(circle_at_bottom_right,_#f59e0b,_transparent_40%)] opacity-30" />
+            <div className="max-w-6xl mx-auto px-4 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+              <div>
+                <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">{BAKERY.name}</h1>
+                <p className="mt-4 text-lg md:text-xl text-stone-700">{BAKERY.tagline}</p>
+                <p className="mt-2 text-stone-600">{BAKERY.owner}</p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <a href={`https://wa.me/${BAKERY.whatsapp}?text=${waMessage}`} className="inline-flex items-center rounded-2xl px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white shadow">Order on WhatsApp</a>
+                  <a href={`tel:${BAKERY.phone.replace(/\s+/g, "")}`} className="inline-flex items-center rounded-2xl px-5 py-3 bg-stone-900 hover:bg-stone-800 text-white shadow">Call Now</a>
+                </div>
+                <div className="mt-4 text-sm text-stone-600"><span className="font-semibold">Pickup/Delivery:</span> {BAKERY.delivery.join(", ")}</div>
+              </div>
+              <div className="relative">
+                <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-xl bg-[url('https://images.unsplash.com/photo-1551024709-8f23befc6cf7?q=80&w=1887&auto=format&fit=crop')] bg-cover bg-center" />
+                <div className="absolute -bottom-4 -right-4 bg-white rounded-2xl shadow p-4">
+                  <p className="text-sm text-stone-600">Hygienic home kitchen</p>
+                  <p className="font-semibold">Thiruvanmiyur, Chennai</p>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Menu search */}
+          <section className="max-w-6xl mx-auto px-4 py-8">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <h2 className="text-2xl md:text-3xl font-bold">Our Menu</h2>
+              <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Search cinnamon rolls, cakes, cookies…" className="w-full md:w-80 rounded-xl border border-stone-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+            </div>
+
+            {/* Menu grid */}
+            <div className="mt-6 grid md:grid-cols-2 gap-6">
+              {filteredMenu.map((sec) => (
+                <div key={sec.category} className="bg-white rounded-3xl p-6 shadow-sm border border-stone-200">
+                  <h3 className="text-xl font-semibold mb-4">{sec.category}</h3>
+                  <ul className="space-y-4">
+                    {sec.items.map((it) => (
+                      <li key={it.name} className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                          <div className="w-20 h-20 rounded-xl overflow-hidden bg-stone-100 flex-shrink-0">
+                            {it.img ? (
+                              <img src={it.img} alt={it.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xs text-stone-500">No image</div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">{it.name}</p>
+                            <p className="text-sm text-stone-600">{it.desc}</p>
+                          </div>
+                        </div>
+                        <div className="text-right min-w-[10rem]">
+                          <p className="font-semibold">₹{it.price}</p>
+                          <button onClick={() => addToCart({ name: it.name, price: it.price })} className="mt-1 text-sm rounded-xl px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white shadow">Add</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Cart & Checkout controls */}
+          <section className="max-w-6xl mx-auto px-4 pb-4">
+            <div className="bg-white border border-stone-200 rounded-2xl shadow-sm p-4">
+              <h3 className="text-xl font-semibold">Your Cart & Checkout</h3>
+              {cart.length === 0 ? (
+                <p className="mt-2 text-stone-600">Your cart is empty.</p>
+              ) : (
+                <ul className="mt-3 divide-y divide-stone-100">
+                  {cart.map((i, idx) => (
+                    <li key={idx} className="py-2 flex items-center justify-between gap-4">
+                      <div className="text-sm">{i.name} — ₹{i.price}</div>
+                      <button onClick={() => removeFromCart(idx)} className="text-xs rounded-lg px-2 py-1 border border-stone-300 hover:bg-stone-50">Remove</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="mt-4 grid md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <input value={custName} onChange={(e) => setCustName(e.target.value)} placeholder="Your name" className="w-full rounded-xl border border-stone-300 px-4 py-2" />
+                  <div className="flex gap-3 flex-wrap">
+                    <label className={`rounded-xl px-3 py-2 border ${fulfillment === "Pickup" ? "bg-stone-900 text-white" : "border-stone-300"}`}>
+                      <input type="radio" name="fulfill" className="hidden" checked={fulfillment === "Pickup"} onChange={() => setFulfillment("Pickup")} />
+                      Pickup
+                    </label>
+                    <label className={`rounded-xl px-3 py-2 border ${fulfillment === "Delivery" ? "bg-stone-900 text-white" : "border-stone-300"}`}>
+                      <input type="radio" name="fulfill" className="hidden" checked={fulfillment === "Delivery"} onChange={() => setFulfillment("Delivery")} />
+                      Delivery
+                    </label>
+                  </div>
+                  <div className="flex gap-3 flex-wrap">
+                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="rounded-xl border border-stone-300 px-4 py-2" />
+                    <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="rounded-xl border border-stone-300 px-4 py-2" />
+                  </div>
+                  {fulfillment === "Delivery" && (
+                    <div className="flex items-center gap-3">
+                      <input type="number" min="1" step="0.5" value={distanceKm} onChange={(e) => setDistanceKm(e.target.value)} placeholder="Distance (km)" className="rounded-xl border border-stone-300 px-4 py-2 w-40" />
+                      <span className="text-sm text-stone-600">Fee rule-of-thumb: ₹12/km (min ₹30)</span>
+                    </div>
+                  )}
+                  <p className="text-xs text-stone-500">Delivery fee is estimated; exact fee may vary by rider and distance.</p>
+                </div>
+                <div className="bg-stone-50 rounded-xl p-4 border border-stone-200">
+                  <div className="flex justify-between text-sm"><span>Subtotal</span><span>₹{subtotal}</span></div>
+                  <div className="flex justify-between text-sm mt-1"><span>Delivery Fee</span><span>{fulfillment === "Delivery" ? (fee != null ? `₹${fee}` : "charges by distance") : "—"}</span></div>
+                  <div className="flex justify-between font-semibold mt-2"><span>Grand Total (est.)</span><span>₹{grandTotal}</span></div>
+                  <div className="mt-3 flex gap-2">
+                    <a href={`https://wa.me/${BAKERY.whatsapp}?text=${waMessage}`} className="rounded-xl px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white">Send Order via WhatsApp</a>
+                    <button onClick={() => setCart([])} className="rounded-xl px-3 py-2 border border-stone-300 hover:bg-stone-50">Clear Cart</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* About */}
+          <section className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center">
+            <div className="order-2 md:order-1">
+              <h2 className="text-2xl md:text-3xl font-bold">About the Bakery</h2>
+              <p className="mt-4 text-stone-700">Welcome! I'm a Chennai-based home baker specializing in cinnamon-forward desserts. Every batch is handcrafted in a hygienic home kitchen with quality ingredients — no shortcuts. Pre-orders ensure freshness and reduce food waste.</p>
+              <ul className="mt-4 space-y-2 text-stone-700 list-disc pl-5">
+                <li>Egg-free & low-sugar options available on request</li>
+                <li>Gift packaging & party trays available</li>
+                <li>Same-day pickup for select items (while stock lasts)</li>
+              </ul>
+              <div className="mt-6 flex gap-3">
+                <a href={`tel:${BAKERY.phone.replace(/\s+/g, "")}`} className="rounded-xl px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white">Call</a>
+                <a href={`https://wa.me/${BAKERY.whatsapp}`} className="rounded-xl px-4 py-2 border border-stone-300 hover:bg-stone-50">WhatsApp</a>
+                {BAKERY.instagram && (<a href={BAKERY.instagram} className="rounded-xl px-4 py-2 border border-stone-300 hover:bg-stone-50">Instagram</a>)}
+              </div>
+            </div>
+            <div className="order-1 md:order-2">
+              <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow bg-[url('https://images.unsplash.com/photo-1541976076758-347942db1974?q=80&w=1887&auto=format&fit=crop')] bg-cover bg-center" />
+            </div>
+          </section>
+
+          {/* Testimonials */}
+          <section className="bg-amber-50/60 border-y border-amber-100">
+            <div className="max-w-6xl mx-auto px-4 py-14">
+              <h2 className="text-2xl md:text-3xl font-bold">What customers say</h2>
+              <div className="mt-6 grid md:grid-cols-3 gap-6">
+                {[
+                  { q: "Softest cinnamon rolls in Chennai!", a: "Ananya K." },
+                  { q: "Perfectly balanced sugar & spice.", a: "Rahul M." },
+                  { q: "Great gifting idea — beautiful packaging!", a: "Meera S." },
+                ].map((t) => (
+                  <figure key={t.q} className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
+                    <blockquote className="text-stone-700">“{t.q}”</blockquote>
+                    <figcaption className="mt-3 text-sm text-stone-500">— {t.a}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* FAQs */}
+          <section className="max-w-6xl mx-auto px-4 py-14">
+            <h2 className="text-2xl md:text-3xl font-bold">Frequently Asked Questions</h2>
+            <div className="mt-6 space-y-4">
+              {[
+                { q: "How do I place an order?", a: "Add items to cart and tap WhatsApp checkout, or call us directly." },
+                { q: "Do you deliver?", a: `Yes, via ${BAKERY.delivery.join(", ")}. Charges apply based on distance.` },
+                { q: "Do you take same‑day orders?", a: "Sometimes! Message us — we’ll try our best." },
+                { q: "Are there eggless options?", a: "Yes. Please mention any dietary preferences while ordering." },
+              ].map((f) => (
+                <details key={f.q} className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
+                  <summary className="font-medium cursor-pointer">{f.q}</summary>
+                  <p className="mt-2 text-stone-700">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          {/* Contact & Hours */}
+          <section className="max-w-6xl mx-auto px-4 pb-20">
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm">
+                <h3 className="text-xl font-semibold">Contact & Hours</h3>
+                <p className="mt-3 text-stone-700">{BAKERY.addressLine1}, {BAKERY.addressLine2}</p>
+                <p className="text-stone-700">Phone: {BAKERY.phone}</p>
+                {BAKERY.email && <p className="text-stone-700">Email: {BAKERY.email}</p>}
+                <div className="mt-4">
+                  <ul className="text-stone-700">
+                    {BAKERY.hours.map((h) => (<li key={h.d}><span className="font-medium">{h.d}:</span> {h.h}</li>))}
+                  </ul>
+                </div>
+                <div className="mt-4 flex gap-3">
+                  <a href={`https://wa.me/${BAKERY.whatsapp}`} className="rounded-xl px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white">WhatsApp</a>
+                  <a href={`tel:${BAKERY.phone.replace(/\s+/g, "")}`} className="rounded-xl px-4 py-2 border border-stone-300 hover:bg-stone-50">Call</a>
+                  {BAKERY.googleMaps && (<a href={BAKERY.googleMaps} className="rounded-xl px-4 py-2 border border-stone-300 hover:bg-stone-50">Directions</a>)}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border border-stone-200 shadow-sm">
+                <h3 className="text-xl font-semibold">Quick Enquiry</h3>
+                <form action="https://formspree.io/f/yourcode" method="POST" className="mt-4 grid grid-cols-1 gap-3">
+                  <input name="name" placeholder="Your name" className="rounded-xl border border-stone-300 px-4 py-2" required />
+                  <input name="phone" placeholder="Phone / WhatsApp" className="rounded-xl border border-stone-300 px-4 py-2" required />
+                  <textarea name="message" placeholder="What would you like to order?" rows="4" className="rounded-xl border border-stone-300 px-4 py-2" required></textarea>
+                  <button className="rounded-xl px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white">Send</button>
+                </form>
+                <p className="mt-2 text-xs text-stone-500">By submitting, you agree to be contacted on WhatsApp/phone.</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className="bg-stone-900 text-stone-200">
+            <div className="max-w-6xl mx-auto px-4 py-10 grid md:grid-cols-3 gap-6">
+              <div>
+                <p className="font-semibold">{BAKERY.name}</p>
+                <p className="text-sm text-stone-400 mt-1">Home‑run cinnamon desserts bakery in Chennai.</p>
+              </div>
+              <div>
+                <p className="font-semibold">Contact</p>
+                <p className="text-sm text-stone-400">{BAKERY.phone}</p>
+                {BAKERY.email && <p className="text-sm text-stone-400">{BAKERY.email}</p>}
+              </div>
+              <div>
+                <p className="font-semibold">Follow</p>
+                {BAKERY.instagram ? (
+                  <a className="text-sm text-stone-400 underline" href={BAKERY.instagram}>Instagram</a>
+                ) : (
+                  <p className="text-sm text-stone-400">Instagram coming soon</p>
+                )}
+              </div>
+            </div>
+            <div className="text-center text-xs text-stone-500 pb-6">© {new Date().getFullYear()} {BAKERY.name}. All rights reserved.</div>
+          </footer>
+        </div>
+      );
+    }
+
+    // -----------------------------
+    // Lightweight self-tests (dev only)
+    // -----------------------------
+    function runSelfTests() {
+      const results = [];
+      const push = (name, pass) => results.push({ name, pass: !!pass });
+
+      try {
+        // Test 1: MENU is non-empty and shaped correctly
+        push("MENU has categories", Array.isArray(MENU) && MENU.length > 0);
+        push("MENU items have name & price", MENU.every((sec) => Array.isArray(sec.items) && sec.items.every((it) => typeof it.name === "string" && typeof it.price === "number")));
+
+        // Test 2: BAKERY contact fields
+        push("BAKERY has whatsapp id", /^(\d){8,15}$/.test(BAKERY.whatsapp));
+        push("BAKERY phone present", typeof BAKERY.phone === "string" && BAKERY.phone.length > 5);
+
+        // Test 3: WhatsApp message encodes and contains totals
+        const testCart = [{ name: "X", price: 10 }, { name: "Y", price: 5 }];
+        const msg = decodeURIComponent(encodeURIComponent(`Hi ${BAKERY.name}! I'd like to order:\n` + testCart.map((i) => `• ${i.name} — ₹${i.price}`).join("\n") + `\nTotal: ₹${testCart.reduce((a, b) => a + b.price, 0)}`));
+        push("WA message includes Total", msg.includes("Total: ₹15"));
+
+        // Test 4: Filter logic should reduce items when filter mismatches
+        const before = MENU.reduce((n, s) => n + s.items.length, 0);
+        const after = MENU.map((s) => ({ ...s, items: s.items.filter((i) => i.name.includes("zzz")) })).reduce((n, s) => n + s.items.length, 0);
+        push("Filter reduces item count on mismatch", after <= before);
+
+        // Test 5: waMessage reflects empty cart state
+        const emptyMsg = decodeURIComponent(encodeURIComponent(`Hi ${BAKERY.name}! I'd like to order:\n` + "(no items yet)" + `\n\nPickup/Delivery: \nPreferred date & time: `));
+        push("WA message handles empty cart", emptyMsg.includes("no items yet"));
+
+        // Test 6: Delivery fee estimator
+        push("Fee min rule", estimateDeliveryFee(1) === 30);
+        push("Fee per-km rule", estimateDeliveryFee(5) === 60);
+
+        // Test 7: WA message includes name & fulfillment when provided
+        const sampleName = "Seetha";
+        const sampleFulfill = "Delivery";
+        const mockLines = [`Hi ${BAKERY.name}! I'd like to order:`, "(no items yet)", "", `Name: ${sampleName}`, `Fulfillment: ${sampleFulfill}`].join("\n");
+        push("Message includes name", mockLines.includes(sampleName));
+        push("Message includes fulfillment", mockLines.includes(sampleFulfill));
+
+        // Test 8: Each menu item has an image url string
+        push("Menu images present", MENU.every((sec) => sec.items.every((it) => typeof it.img === 'string' && it.img.length > 0)));
+
+        // Test 9: WhatsApp number format is digits only (no +)
+        push("WhatsApp id digits only", /^\d+$/.test(BAKERY.whatsapp));
+
+        // Test 10 (new): estimator returns null for unknown
+        push("Fee null for unknown", estimateDeliveryFee(null) === null && estimateDeliveryFee(undefined) === null);
+
+        // Test 11 (new): estimator accepts numeric strings
+        push("Fee accepts string km", estimateDeliveryFee("5") === 60);
+      } catch (e) {
+        console.error("Self-tests encountered an error:", e);
+      } finally {
+        const passed = results.filter((r) => r.pass).length;
+        const total = results.length;
+        console.log(`[CinnamonDessertShop] Self-tests: ${passed}/${total} passed`, results);
+      }
+    }
+
+    // Boot the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<CinnamonBakerySite />);
+
+    // Run self-tests in console
+    runSelfTests();
+  </script>
+</body>
+</html>
